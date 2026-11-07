@@ -12,7 +12,7 @@ export const config = {
   }
 };
 
-const MAX_FILE_SIZE = 4 * 1024 * 1024;
+const MAX_SIZE = 4 * 1024 * 1024;
 
 const ALLOWED_TYPES = [
   "CIE question papers",
@@ -22,93 +22,81 @@ const ALLOWED_TYPES = [
   "Study materials"
 ];
 
+const one = value =>
+  Array.isArray(value) ? value[0] : value;
+
+const clean = value =>
+  String(one(value) ?? "").trim();
+
 function parseForm(req) {
   const form = new IncomingForm({
-    maxFileSize: MAX_FILE_SIZE,
-    maxTotalFileSize: MAX_FILE_SIZE,
+    maxFileSize: MAX_SIZE,
     multiples: false,
     keepExtensions: true
   });
 
   return new Promise((resolve, reject) => {
     form.parse(req, (error, fields, files) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve({ fields, files });
-      }
+      if (error) reject(error);
+      else resolve({ fields, files });
     });
   });
-}
-
-function one(value) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function clean(value) {
-  return String(one(value) ?? "").trim();
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return json(res, 405, {
-      error: "Method not allowed."
+      error: "Only POST requests are allowed."
     });
   }
 
-  // ADMIN AUTHENTICATION
-  const configuredAdminKey =
-    process.env.ADMIN_API_KEY?.trim();
+  // 1. CHECK ADMIN KEY
+  const savedKey = process.env.ADMIN_API_KEY?.trim();
 
-  const suppliedAdminKey =
+  const enteredKey =
     typeof req.headers["x-admin-key"] === "string"
       ? req.headers["x-admin-key"].trim()
       : "";
 
-  if (!configuredAdminKey) {
+  if (!savedKey) {
     return json(res, 500, {
-      error: "ADMIN_API_KEY is missing from Vercel environment variables. Add it and redeploy."
+      error: "ADMIN_API_KEY is missing in Vercel. Add the variable and redeploy."
     });
   }
 
-  if (
-    !suppliedAdminKey ||
-    suppliedAdminKey !== configuredAdminKey
-  ) {
+  if (!enteredKey || enteredKey !== savedKey) {
     return json(res, 401, {
-      error: "Admin authentication failed. The entered key does not match the deployed ADMIN_API_KEY."
+      error: "Incorrect admin key. Enter the same value configured as ADMIN_API_KEY in Vercel."
     });
   }
 
+  let db;
   let tempPath = null;
   let uploadedPath = null;
-  let db = null;
   let resourceId = null;
 
   const bucket =
     process.env.SUPABASE_BUCKET || "academic-pdfs";
 
   try {
-    // CONNECT TO SUPABASE
+    // 2. CONNECT TO SUPABASE
     db = supabaseAdmin();
 
-    // RECEIVE FORM AND PDF
+    // 3. RECEIVE PDF AND FORM DATA
     const { fields, files } = await parseForm(req);
 
     const file = one(files.pdf);
 
     if (!file) {
       return json(res, 400, {
-        error: "Please choose a PDF file."
+        error: "Please select a PDF file."
       });
     }
 
-    tempPath = file.filepath || file.path;
+    tempPath = file.filepath;
 
     const originalName =
-      file.originalFilename ||
-      file.name ||
-      "resource.pdf";
+      file.originalFilename || "resource.pdf";
 
     if (
       path.extname(originalName).toLowerCase() !== ".pdf"
@@ -118,25 +106,25 @@ export default async function handler(req, res) {
       });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_SIZE) {
       return json(res, 413, {
-        error: "PDF size must not exceed 4 MB."
+        error: "PDF must be smaller than 4 MB."
       });
     }
 
-    // READ RESOURCE DETAILS
+    // 4. READ ACADEMIC DETAILS
     const title = clean(fields.title);
     const department = clean(fields.department);
     const year = Number(clean(fields.year));
     const semester = Number(clean(fields.semester));
+
     const unitText = clean(fields.unit);
     const unit = unitText ? Number(unitText) : null;
+
     const subject = clean(fields.subject);
-    const subjectCode =
-      clean(fields.subjectCode) || null;
+    const subjectCode = clean(fields.subjectCode) || null;
     const resourceType = clean(fields.resourceType);
 
-    // VALIDATE RESOURCE DETAILS
     if (
       !title ||
       !department ||
@@ -147,33 +135,29 @@ export default async function handler(req, res) {
       !ALLOWED_TYPES.includes(resourceType)
     ) {
       return json(res, 400, {
-        error: "Please enter valid title, department, year, semester, subject and resource type."
+        error: "Please complete all academic details correctly."
       });
     }
 
-    // EXTRACT PDF TEXT
+    // 5. EXTRACT PDF TEXT
     const buffer = await fs.readFile(tempPath);
-
     const parsed = await pdfParse(buffer);
 
-    const pageTexts = String(parsed.text || "")
+    const pages = String(parsed.text || "")
       .split(/\f/)
-      .map(text => text.trim());
-
-    const pages = pageTexts
-      .map((pageText, index) => ({
+      .map((text, index) => ({
         page_number: index + 1,
-        page_text: pageText
+        page_text: text.trim()
       }))
       .filter(page => page.page_text.length > 0);
 
     if (pages.length === 0) {
       return json(res, 422, {
-        error: "No selectable text found in this PDF. Scanned PDFs need OCR before indexing."
+        error: "No readable text found. This PDF may be scanned and require OCR."
       });
     }
 
-    // CREATE STORAGE PATH
+    // 6. UPLOAD PDF TO SUPABASE STORAGE
     const safeDepartment = department.replace(
       /[^a-z0-9_-]/gi,
       "_"
@@ -182,22 +166,21 @@ export default async function handler(req, res) {
     const storagePath =
       `${safeDepartment}/${year}-${semester}/${crypto.randomUUID()}.pdf`;
 
-    // UPLOAD PDF TO SUPABASE STORAGE
-    const { error: storageError } = await db.storage
+    const { error: uploadError } = await db.storage
       .from(bucket)
       .upload(storagePath, buffer, {
         contentType: "application/pdf",
         upsert: false
       });
 
-    if (storageError) {
-      throw storageError;
+    if (uploadError) {
+      throw new Error("Supabase storage upload failed: " + uploadError.message);
     }
 
     uploadedPath = storagePath;
 
-    // SAVE RESOURCE DETAILS
-    const { data: resource, error: insertError } = await db
+    // 7. SAVE RESOURCE INFORMATION
+    const { data: resource, error: resourceError } = await db
       .from("resources")
       .insert({
         title,
@@ -214,13 +197,13 @@ export default async function handler(req, res) {
       .select("id")
       .single();
 
-    if (insertError) {
-      throw insertError;
+    if (resourceError) {
+      throw resourceError;
     }
 
     resourceId = resource.id;
 
-    // INDEX PDF PAGE CONTENT
+    // 8. INDEX EACH PDF PAGE
     const pageRows = pages.map(page => ({
       resource_id: resourceId,
       page_number: page.page_number,
@@ -239,7 +222,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // SUCCESS
+    // 9. SUCCESS
     return json(res, 201, {
       success: true,
       message: "PDF uploaded and indexed successfully.",
@@ -248,9 +231,8 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("ADMIN PDF UPLOAD ERROR:", error);
+    console.error("ADMIN UPLOAD ERROR:", error);
 
-    // CLEAN UP DATABASE RESOURCE IF CREATED
     if (db && resourceId) {
       await db
         .from("resources")
@@ -258,7 +240,6 @@ export default async function handler(req, res) {
         .eq("id", resourceId);
     }
 
-    // REMOVE UPLOADED PDF IF SOMETHING FAILED
     if (db && uploadedPath) {
       await db.storage
         .from(bucket)
@@ -270,7 +251,6 @@ export default async function handler(req, res) {
     });
 
   } finally {
-    // REMOVE TEMPORARY FILE
     if (tempPath) {
       await fs.unlink(tempPath).catch(() => {});
     }
