@@ -1,6 +1,1 @@
-{
-  "functions": {
-    "api/admin-upload.js": { "maxDuration": 10 },
-    "api/razorpay-webhook.js": { "maxDuration": 10 }
-  }
-}
+{}
