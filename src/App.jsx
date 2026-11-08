@@ -6,7 +6,7 @@ import {
   Search, BookOpen, FileText, FlaskConical, GraduationCap,
   ArrowUpRight, Sparkles, Menu, X, UploadCloud, LibraryBig,
   Layers3, Command, CheckCircle2, BookMarked, Crown, LogIn,
-  LogOut, Mail, BadgeIndianRupee
+  LogOut, Mail, BadgeIndianRupee, Home, ShieldCheck, Globe2, UserRound
 } from "lucide-react";
 
 const departments = ["CSE", "IT", "AI & DS", "AI & ML", "ECE", "EEE", "Mechanical", "Civil"];
@@ -303,110 +303,93 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="nav">
-        <a className="brand" href="#">
-          <span className="brandicon"><LibraryBig /></span>
+      <header className="nav vimal-nav" id="top">
+        <a className="brand vimal-brand" href="#top" aria-label="VIMAL HUB home">
+          <span className="brandicon"><BookOpen size={31} /></span>
           <span>
-            VIMAL<span className="gold"> HUB</span>
+            VIMAL HUB
             <small>ACADEMIC PORTAL FOR COLLEGE STUDENTS</small>
           </span>
         </a>
 
-        <button className="hamb" onClick={() => setMenu(!menu)}>
+        <button className="hamb" aria-label="Toggle navigation" onClick={() => setMenu(!menu)}>
           {menu ? <X /> : <Menu />}
         </button>
 
-        <nav className={menu ? "links show" : "links"}>
-          <a href="#explore">Explore</a>
-          <a href="#features">Resources</a>
-          <a href="#how">How it works</a>
-
-          {session ? (
-            <button onClick={signOut}>
-              <LogOut size={15} /> Sign out
-            </button>
-          ) : (
-            <button onClick={() => setAuthOpen(true)}>
-              <LogIn size={15} /> Student sign in
-            </button>
-          )}
-
-          <button onClick={() => setAdmin(true)}>
-            <UploadCloud size={15} /> Admin upload
-          </button>
+        <nav className={menu ? "links show vimal-links" : "links vimal-links"}>
+          <a className="nav-home" href="#top" onClick={() => setMenu(false)}><Home size={17} /> Home</a>
+          <a href="#explore" onClick={() => setMenu(false)}><Search size={17} /> Search</a>
+          <button onClick={() => { setAdmin(true); setMenu(false); }}><UploadCloud size={17} /> Upload</button>
+          <a className="nav-premium" href="#membership" onClick={() => setMenu(false)}><Crown size={18} /> Premium</a>
+          <button onClick={() => { setAdmin(true); setMenu(false); }}><ShieldCheck size={17} /> Admin</button>
         </nav>
+
+        <button
+          className="student-gmail"
+          onClick={() => session ? signOut() : setAuthOpen(true)}
+          title={session ? "Sign out" : "Student sign in"}
+        >
+          <span className="google-g">G</span>
+          <span>{session ? studentName : "Student sign in"}</span>
+          <span className="gmail-chevron">⌄</span>
+        </button>
       </header>
 
       <main>
-        <section className="hero">
-          <div className="hero-copy">
-            <div className="eyebrow">
-              <i /> THE KNOWLEDGE YOU NEED, ONE SEARCH AWAY
+        <section className="hero vimal-hero">
+          <div className="hero-slogan">
+            <div className="slogan-copy">
+              <h1>Learn <span>•</span> <em>Explore</em> <span>•</span> Excel</h1>
+              <p>Knowledge is Power... and with God, you can achieve more.</p>
             </div>
-
-            <h1>
-              Study with <em>clarity.</em>
-              <br />
-              Find it with <span>intelligence.</span>
-            </h1>
-
-            <p>
-              A smarter academic library for every department. Search concepts
-              inside notes and question papers — even when you don't know which
-              unit contains them.
-            </p>
-
-            <div className="actions">
-              <a className="primary" href="#explore">
-                Explore resources <ArrowUpRight size={17} />
-              </a>
-              <a className="secondary" href="#how">
-                See how it works ↗
-              </a>
-            </div>
-
-            <div className="proof">
-              ✦ &nbsp;All departments · All semesters · All five units
-            </div>
-          </div>
-
-          <div className="art terminal-visual" aria-label="Futuristic academic knowledge terminal">
-            <div className="terminal-grid" />
-            <div className="terminal-orbit terminal-orbit-one" />
-            <div className="terminal-orbit terminal-orbit-two" />
-            <div className="terminal-core">
-              <div className="terminal-core-ring" />
-              <LibraryBig size={58} />
-              <strong>VIMAL HUB</strong>
-              <small>ACADEMIC KNOWLEDGE NETWORK</small>
-            </div>
-            <div className="terminal-panel terminal-panel-top">
-              <span className="terminal-live-dot" /> LIVE ACADEMIC SEARCH
-              <b>CONTENT INTELLIGENCE</b>
-              <small>PDF · NOTES · QUESTION PAPERS</small>
-            </div>
-            <div className="terminal-panel terminal-panel-side">
-              <Search size={18} />
-              <b>PAGE-LEVEL SEARCH</b>
-              <small>Find knowledge inside every document</small>
-            </div>
-            <div className="terminal-founder">
-              <small>FOUNDER</small>
-              <strong>VIMAL</strong>
-              <span>Built to make learning easier.</span>
-            </div>
-            <div className="terminal-scanline" />
+            <div className="slogan-globe" aria-hidden="true"><Globe2 /></div>
           </div>
 
           <BibleVerseTicker />
 
-          <div className="hero-foot">
-            <span>01 / YOUR ACADEMIC COMPANION</span>
-            <span>SCROLL TO DISCOVER ↓</span>
+          <div className="welcome-founder-grid">
+            <section className="welcome-panel">
+              <div className="welcome-avatar"><UserRound size={58} /></div>
+              <div className="welcome-copy">
+                <span className="student-label"><GraduationCap size={16} /> STUDENT PORTAL</span>
+                <h2>Welcome back, <strong>{session ? studentName : "Student"}!</strong></h2>
+                <h3>Your learning journey continues...</h3>
+                <p>Discover knowledge. Explore resources. Achieve more.</p>
+              </div>
+            </section>
+
+            <section className="founder-showcase" aria-label="Founder Vimal">
+              <div className="founder-copy">
+                <span className="founder-kicker">FOUNDER</span>
+                <strong className="founder-name">VIMAL</strong>
+                <p>“Dream Big... Learn More...<br />Achieve Higher...”</p>
+                <span className="founder-signature">– Vimal</span>
+              </div>
+              <img src="/founder-portrait.png" alt="Founder Vimal" />
+            </section>
+          </div>
+
+          <div className="quick-actions">
+            <a className="quick-card quick-search" href="#explore">
+              <Search size={42} />
+              <span><b>Search Content</b><small>Find Now →</small></span>
+            </a>
+            <button className="quick-card quick-upload" onClick={() => setAdmin(true)}>
+              <UploadCloud size={44} />
+              <span><b>Upload PDFs</b><small>Upload →</small></span>
+            </button>
+            <a className="quick-card quick-premium" href="#membership">
+              <Crown size={44} />
+              <span><b>Premium Access</b><small>Get Access →</small></span>
+            </a>
+            <button className="quick-card quick-admin" onClick={() => setAdmin(true)}>
+              <ShieldCheck size={44} />
+              <span><b>Admin Panel</b><small>Login →</small></span>
+            </button>
           </div>
         </section>
 
-        <section className="section account-area" aria-label="Student account and membership">
+        <section className="section account-area" id="membership" aria-label="Student account and membership">
           <div className="account-card">
             <div>
               <div className="eyebrow dark">STUDENT SEARCH PASS</div>
@@ -783,29 +766,31 @@ function BibleVerseTicker() {
   useEffect(() => {
     const interval = window.setInterval(() => {
       setVerseIndex((current) => (current + 1) % bibleVerses.length);
-    }, 5000);
+    }, 6500);
     return () => window.clearInterval(interval);
   }, []);
 
   const verse = bibleVerses[verseIndex];
 
   return (
-    <section className="verse-ribbon" aria-live="polite" aria-label="Daily Bible inspiration">
-      <div className="verse-mark">✦</div>
-      <div className="verse-copy">
-        <small>WORDS OF FAITH · SCRIPTURE INSPIRATION</small>
+    <section className="verse-ribbon" aria-live="polite" aria-label="Continuously changing Bible verses">
+      <div className="verse-cross" aria-hidden="true">✝</div>
+      <div className="verse-marquee-window">
         <motion.div
           key={verseIndex}
-          className="verse-text"
-          initial={{ opacity: 0, y: 14, filter: "blur(5px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="verse-marquee-track"
+          initial={{ x: "35%", opacity: 0.25 }}
+          animate={{ x: ["35%", "-100%"], opacity: 1 }}
+          transition={{ duration: 6.4, ease: "linear" }}
         >
-          “{verse.text}”
+          <span>“{verse.text}”</span>
+          <b>– {verse.reference}</b>
+          <i className="verse-separator">✦</i>
+          <span>“{bibleVerses[(verseIndex + 1) % bibleVerses.length].text}”</span>
+          <b>– {bibleVerses[(verseIndex + 1) % bibleVerses.length].reference}</b>
         </motion.div>
       </div>
-      <div className="verse-reference">{verse.reference}</div>
-      <div className="verse-progress"><span key={verseIndex} /></div>
+      <div className="verse-arrows" aria-hidden="true">»</div>
     </section>
   );
 }
