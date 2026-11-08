@@ -52,6 +52,22 @@ export default function App() {
   const [accountLoading, setAccountLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [payMessage, setPayMessage] = useState("");
+  const verses = [
+    { text: "Trust in the Lord with all your heart", ref: "PROVERBS 3:5" },
+    { text: "I can do all things through Christ who strengthens me", ref: "PHILIPPIANS 4:13" },
+    { text: "Be strong and courageous. Do not be afraid", ref: "JOSHUA 1:9" },
+    { text: "The Lord is my strength and my shield", ref: "PSALM 28:7" },
+    { text: "Commit your work to the Lord", ref: "PROVERBS 16:3" },
+    { text: "Let all that you do be done in love", ref: "1 CORINTHIANS 16:14" }
+  ];
+  const [verseIndex, setVerseIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setVerseIndex((current) => (current + 1) % verses.length);
+    }, 6500);
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function refreshAccount(currentSession = session) {
     if (!currentSession?.access_token) {
@@ -360,36 +376,44 @@ export default function App() {
             </div>
           </div>
 
-          <div className="art">
-            <div className="portrait">
-              <img
-                src="https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=1100&q=85"
-                alt="Classical sacred art"
-              />
-              <div className="portrait-shade" />
-              <div className="founder">
-                <small>FOUNDER & CREATOR</small>
-                <b>VIMAL</b>
-                <span>Built to make learning easier.</span>
-              </div>
+          <div className="art command-art" aria-label="VIMAL futuristic academic command centre">
+            <div className="art-grid" />
+            <div className="orbit orbit-one" />
+            <div className="orbit orbit-two" />
+            <div className="orbit orbit-three" />
+            <div className="command-core">
+              <div className="core-glow" />
+              <div className="core-symbol"><LibraryBig size={76} strokeWidth={1.15} /></div>
+              <div className="core-label">KNOWLEDGE ENGINE</div>
+              <div className="core-name">VIMAL<span>_</span></div>
+              <div className="core-caption">COLLEGE HUB · INTELLIGENCE NETWORK</div>
             </div>
-
+            <div className="founder-card">
+              <small>FOUNDED & DESIGNED BY</small>
+              <b>VIMAL</b>
+              <span>Engineering knowledge into possibility.</span>
+            </div>
             <div className="float f1">
               <Search />
-              <span>
-                <b>Concept search</b>
-                <small>Find topics across units</small>
-              </span>
+              <span><b>CONCEPT SEARCH</b><small>Find topics across units</small></span>
               <CheckCircle2 />
             </div>
-
             <div className="float f2">
               <FileText />
-              <span>
-                <b>Page-level results</b>
-                <small>Open the exact PDF page</small>
-              </span>
+              <span><b>PAGE INTELLIGENCE</b><small>Open the exact PDF page</small></span>
             </div>
+            <div className="signal-tag"><i /> SYSTEM ONLINE <span>98.7%</span></div>
+            <div className="art-index">VCH / 2026 <span>•</span> ACADEMIC AI</div>
+          </div>
+
+          <div className="verse-ribbon" aria-live="polite">
+            <div className="verse-mark">✦</div>
+            <div className="verse-copy">
+              <small>DAILY WORD · SCRIPTURE IN MOTION</small>
+              <div key={verseIndex} className="verse-text">“{verses[verseIndex].text}”</div>
+            </div>
+            <div className="verse-reference">{verses[verseIndex].ref}</div>
+            <div className="verse-progress"><span key={verseIndex} /></div>
           </div>
 
           <div className="hero-foot">
