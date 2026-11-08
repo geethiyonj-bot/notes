@@ -52,22 +52,6 @@ export default function App() {
   const [accountLoading, setAccountLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [payMessage, setPayMessage] = useState("");
-  const verses = [
-    { text: "Trust in the Lord with all your heart", ref: "PROVERBS 3:5" },
-    { text: "I can do all things through Christ who strengthens me", ref: "PHILIPPIANS 4:13" },
-    { text: "Be strong and courageous. Do not be afraid", ref: "JOSHUA 1:9" },
-    { text: "The Lord is my strength and my shield", ref: "PSALM 28:7" },
-    { text: "Commit your work to the Lord", ref: "PROVERBS 16:3" },
-    { text: "Let all that you do be done in love", ref: "1 CORINTHIANS 16:14" }
-  ];
-  const [verseIndex, setVerseIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setVerseIndex((current) => (current + 1) % verses.length);
-    }, 6500);
-    return () => window.clearInterval(timer);
-  }, []);
 
   async function refreshAccount(currentSession = session) {
     if (!currentSession?.access_token) {
@@ -306,6 +290,16 @@ export default function App() {
   }
 
   const freeRemaining = account?.remaining ?? 0;
+  const rawStudentName =
+    session?.user?.user_metadata?.full_name ||
+    session?.user?.user_metadata?.name ||
+    session?.user?.email?.split("@")[0] ||
+    "Student";
+  const studentName = String(rawStudentName)
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   return (
     <div className="app">
@@ -313,8 +307,8 @@ export default function App() {
         <a className="brand" href="#">
           <span className="brandicon"><LibraryBig /></span>
           <span>
-            CAMPUS<span className="gold">HUB</span>
-            <small>ACADEMIC RESOURCE NETWORK</small>
+            VIMAL<span className="gold"> HUB</span>
+            <small>ACADEMIC PORTAL FOR COLLEGE STUDENTS</small>
           </span>
         </a>
 
@@ -376,45 +370,35 @@ export default function App() {
             </div>
           </div>
 
-          <div className="art command-art" aria-label="VIMAL futuristic academic command centre">
-            <div className="art-grid" />
-            <div className="orbit orbit-one" />
-            <div className="orbit orbit-two" />
-            <div className="orbit orbit-three" />
-            <div className="command-core">
-              <div className="core-glow" />
-              <div className="core-symbol"><LibraryBig size={76} strokeWidth={1.15} /></div>
-              <div className="core-label">KNOWLEDGE ENGINE</div>
-              <div className="core-name">VIMAL<span>_</span></div>
-              <div className="core-caption">COLLEGE HUB · INTELLIGENCE NETWORK</div>
+          <div className="art terminal-visual" aria-label="Futuristic academic knowledge terminal">
+            <div className="terminal-grid" />
+            <div className="terminal-orbit terminal-orbit-one" />
+            <div className="terminal-orbit terminal-orbit-two" />
+            <div className="terminal-core">
+              <div className="terminal-core-ring" />
+              <LibraryBig size={58} />
+              <strong>VIMAL HUB</strong>
+              <small>ACADEMIC KNOWLEDGE NETWORK</small>
             </div>
-            <div className="founder-card">
-              <small>FOUNDED & DESIGNED BY</small>
-              <b>VIMAL</b>
-              <span>Engineering knowledge into possibility.</span>
+            <div className="terminal-panel terminal-panel-top">
+              <span className="terminal-live-dot" /> LIVE ACADEMIC SEARCH
+              <b>CONTENT INTELLIGENCE</b>
+              <small>PDF · NOTES · QUESTION PAPERS</small>
             </div>
-            <div className="float f1">
-              <Search />
-              <span><b>CONCEPT SEARCH</b><small>Find topics across units</small></span>
-              <CheckCircle2 />
+            <div className="terminal-panel terminal-panel-side">
+              <Search size={18} />
+              <b>PAGE-LEVEL SEARCH</b>
+              <small>Find knowledge inside every document</small>
             </div>
-            <div className="float f2">
-              <FileText />
-              <span><b>PAGE INTELLIGENCE</b><small>Open the exact PDF page</small></span>
+            <div className="terminal-founder">
+              <small>FOUNDER</small>
+              <strong>VIMAL</strong>
+              <span>Built to make learning easier.</span>
             </div>
-            <div className="signal-tag"><i /> SYSTEM ONLINE <span>98.7%</span></div>
-            <div className="art-index">VCH / 2026 <span>•</span> ACADEMIC AI</div>
+            <div className="terminal-scanline" />
           </div>
 
-          <div className="verse-ribbon" aria-live="polite">
-            <div className="verse-mark">✦</div>
-            <div className="verse-copy">
-              <small>DAILY WORD · SCRIPTURE IN MOTION</small>
-              <div key={verseIndex} className="verse-text">“{verses[verseIndex].text}”</div>
-            </div>
-            <div className="verse-reference">{verses[verseIndex].ref}</div>
-            <div className="verse-progress"><span key={verseIndex} /></div>
-          </div>
+          <BibleVerseTicker />
 
           <div className="hero-foot">
             <span>01 / YOUR ACADEMIC COMPANION</span>
@@ -429,7 +413,7 @@ export default function App() {
 
               <h3>
                 {session
-                  ? `Welcome, ${session.user.email}`
+                  ? `Welcome back, ${studentName}!`
                   : "Sign in to start searching"}
               </h3>
 
@@ -757,13 +741,13 @@ export default function App() {
       <footer>
         <div className="brand">
           <span className="brandicon"><LibraryBig /></span>
-          CAMPUS<span className="gold">HUB</span>
+          VIMAL<span className="gold"> HUB</span>
         </div>
         <p>
           Created by <b>Vimal</b> · A better way to find what you need to learn.
         </p>
         <small>
-          © {new Date().getFullYear()} CAMPUS ACADEMIC HUB ·{" "}
+          © {new Date().getFullYear()} VIMAL HUB · ACADEMIC PORTAL ·{" "}
           <a href="/privacy.html">Privacy</a> ·{" "}
           <a href="/terms.html">Terms</a>
         </small>
@@ -777,6 +761,52 @@ export default function App() {
         />
       )}
     </div>
+  );
+}
+
+const bibleVerses = [
+  { text: "Be strong and of a good courage; be not afraid, neither be thou dismayed.", reference: "JOSHUA 1:9" },
+  { text: "I can do all things through Christ which strengtheneth me.", reference: "PHILIPPIANS 4:13" },
+  { text: "The Lord is my shepherd; I shall not want.", reference: "PSALM 23:1" },
+  { text: "Trust in the Lord with all thine heart; and lean not unto thine own understanding.", reference: "PROVERBS 3:5" },
+  { text: "With God all things are possible.", reference: "MATTHEW 19:26" },
+  { text: "Thy word is a lamp unto my feet, and a light unto my path.", reference: "PSALM 119:105" },
+  { text: "The Lord is my light and my salvation; whom shall I fear?", reference: "PSALM 27:1" },
+  { text: "Let all that ye do be done in love.", reference: "1 CORINTHIANS 16:14" },
+  { text: "For we walk by faith, not by sight.", reference: "2 CORINTHIANS 5:7" },
+  { text: "Commit thy works unto the Lord, and thy thoughts shall be established.", reference: "PROVERBS 16:3" }
+];
+
+function BibleVerseTicker() {
+  const [verseIndex, setVerseIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setVerseIndex((current) => (current + 1) % bibleVerses.length);
+    }, 5000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const verse = bibleVerses[verseIndex];
+
+  return (
+    <section className="verse-ribbon" aria-live="polite" aria-label="Daily Bible inspiration">
+      <div className="verse-mark">✦</div>
+      <div className="verse-copy">
+        <small>WORDS OF FAITH · SCRIPTURE INSPIRATION</small>
+        <motion.div
+          key={verseIndex}
+          className="verse-text"
+          initial={{ opacity: 0, y: 14, filter: "blur(5px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          “{verse.text}”
+        </motion.div>
+      </div>
+      <div className="verse-reference">{verse.reference}</div>
+      <div className="verse-progress"><span key={verseIndex} /></div>
+    </section>
   );
 }
 
