@@ -53,3 +53,202 @@ footer .brand { color:#f4f5ff; }
 @keyframes terminalOrbit { from { rotate:0deg; } to { rotate:360deg; } }
 @media(max-width:900px) { .art.terminal-visual { min-height:440px; height:440px; } }
 @media(max-width:650px) { .art.terminal-visual { min-height:370px; height:370px; margin:12px 0; border-radius:20px; } .terminal-core { width:180px; height:180px; } .terminal-core strong { font-size:20px; } .terminal-panel-top { top:14px; left:12px; right:12px; padding:10px; } .terminal-panel-side { right:10px; bottom:90px; max-width:145px; padding:10px; } .terminal-founder { left:12px; bottom:12px; padding:9px 11px; } .terminal-founder strong { font-size:18px; } .verse-ribbon { align-items:flex-start; } .verse-reference { white-space:normal; } }
+
+/* ==========================================================
+   VIMAL HUB — FUTURISTIC NEON TERMINAL HOMEPAGE REFRESH
+   Visual-only overrides. Existing search/auth/payment/admin
+   component styles and handlers remain in place.
+   ========================================================== */
+:root{
+  --vimal-electric:#00d9ff;
+  --vimal-blue:#087dff;
+  --vimal-deep:#03142f;
+  --vimal-gold:#ffd52e;
+  --vimal-green:#00f0a0;
+}
+body{
+  background:
+    radial-gradient(ellipse at 50% 5%,rgba(0,126,255,.24),transparent 42%),
+    radial-gradient(ellipse at 8% 52%,rgba(0,180,255,.13),transparent 34%),
+    #02091b;
+}
+.app{
+  background-image:
+    linear-gradient(rgba(0,196,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,196,255,.045) 1px,transparent 1px),
+    radial-gradient(ellipse at center,rgba(0,105,255,.12),transparent 68%);
+  background-size:36px 36px,36px 36px,auto;
+}
+.vimal-nav{
+  max-width:1440px;height:96px;padding:10px 28px;gap:18px;
+  border:1px solid rgba(0,207,255,.62);border-top:0;border-radius:0 0 18px 18px;
+  background:linear-gradient(100deg,rgba(1,16,44,.98),rgba(2,26,65,.96));
+  box-shadow:0 8px 30px rgba(0,132,255,.24),inset 0 -1px rgba(94,229,255,.25);
+}
+.vimal-brand{gap:13px;min-width:290px;color:#f5fcff;font-size:clamp(20px,2vw,30px);letter-spacing:.025em;text-shadow:0 0 18px #168dff8c}
+.vimal-brand .brandicon{width:62px;height:62px;border:0;border-radius:15px;color:#e8fbff;background:linear-gradient(145deg,#073a83,#021a45);box-shadow:0 0 22px #00bfff99,inset 0 0 15px #00cfff4f}
+.vimal-brand .brandicon svg{width:48px;height:48px;stroke-width:1.8}
+.vimal-brand .gold{color:#f2fbff}
+.vimal-brand small{font-size:10px;letter-spacing:.035em;color:#e0f5ff}
+.vimal-links{height:100%;gap:0;border:1px solid #00bfff8c;border-radius:15px;overflow:hidden;background:#020d28;box-shadow:0 0 20px #007bff55}
+.vimal-links a,.vimal-links button{
+  height:100%;min-width:96px;padding:0 17px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;
+  border:0;border-right:1px solid #1678bd66;border-radius:0;background:transparent;color:#f5fbff;
+  font-size:13px;font-weight:700;white-space:nowrap;
+}
+.vimal-links a svg,.vimal-links button svg{width:25px;height:25px;color:#12cfff;filter:drop-shadow(0 0 7px #00aaff)}
+.vimal-links .nav-home{background:linear-gradient(180deg,#078cff,#0047d8);box-shadow:0 0 24px #009dff;outline:1px solid #6ceeff}
+.vimal-links .nav-home svg{color:white}
+.vimal-links .nav-premium,.vimal-links .nav-premium svg{color:#ffd52e}
+.vimal-links a:hover,.vimal-links button:hover{background:#06427d;color:#fff}
+.student-gmail{
+  display:flex;align-items:center;gap:9px;flex-shrink:0;padding:10px 14px;border:2px solid #168dff;border-radius:30px;
+  color:white;background:linear-gradient(110deg,#092b62,#061633);font-weight:700;font-size:13px;box-shadow:0 0 18px #008dff66;
+}
+.google-g{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#fff;color:#4285f4;font-size:19px;font-weight:800;font-family:Arial,sans-serif;text-shadow:1px 1px #34a853,-1px -1px #ea4335}
+.gmail-chevron{font-size:20px;line-height:12px;color:#c8edff}
+.vimal-hero{
+  max-width:1440px;min-height:0;padding:22px 28px 26px;display:flex;flex-direction:column;align-items:stretch;gap:15px;
+  background:radial-gradient(ellipse at 50% 40%,rgba(0,129,255,.16),transparent 65%);
+}
+.hero-slogan{
+  min-height:142px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:18px 230px 18px 32px;
+  border:2px solid #008dff;border-radius:18px;
+  background:linear-gradient(100deg,rgba(1,24,65,.97),rgba(0,44,101,.94) 55%,rgba(2,17,53,.98));
+  box-shadow:0 0 20px #008cffb0,inset 0 0 26px #008cff50;
+}
+.hero-slogan:before,.hero-slogan:after{content:"";position:absolute;inset:8px;border:1px solid #22d9ff75;clip-path:polygon(0 0,97% 0,100% 18%,100% 82%,97% 100%,0 100%,2% 50%);pointer-events:none}
+.slogan-copy{text-align:center;position:relative;z-index:1;width:100%}
+.slogan-copy h1{margin:0;font:800 clamp(29px,4vw,48px)/1.1 'Space Grotesk';letter-spacing:-.035em;color:#fff;text-shadow:0 0 16px #008cff99}
+.slogan-copy h1 span{color:#00cfff;padding:0 10px}
+.slogan-copy h1 em{font-style:italic;color:#05e5ff}
+.slogan-copy p{margin:9px 0 0;font-size:clamp(13px,1.4vw,19px);font-style:italic;font-weight:700;color:#f4f8ff}
+.slogan-globe{position:absolute;right:6%;top:50%;transform:translateY(-50%);width:112px;height:112px;display:grid;place-items:center;border-radius:50%;color:#7beeff;background:radial-gradient(circle,#0b65b7 0,#062d68 55%,transparent 72%);box-shadow:0 0 26px #00bfff99,inset 0 0 20px #53eaff55}
+.slogan-globe:before,.slogan-globe:after{content:"";position:absolute;width:155px;height:52px;border:2px solid #35dfff;border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 12px #00bfff}
+.slogan-globe:after{transform:rotate(62deg);width:125px;height:145px;border-color:#2c8dff}
+.slogan-globe svg{width:82px;height:82px;stroke-width:1.2;filter:drop-shadow(0 0 12px #00cfff)}
+.verse-ribbon{
+  width:100%;min-height:62px;margin:0;padding:9px 22px;gap:18px;border:2px solid #00bfff;border-radius:13px;
+  background:linear-gradient(90deg,#031947,#052f70 48%,#031947);box-shadow:0 0 20px #008cffc9,inset 0 0 18px #008cff4d;
+}
+.verse-cross{font-size:36px;font-weight:800;color:#fff;text-shadow:0 0 12px #00cfff,0 0 25px #008dff;line-height:1}
+.verse-marquee-window{min-width:0;flex:1;overflow:hidden;white-space:nowrap}
+.verse-marquee-track{display:flex;align-items:center;gap:12px;width:max-content;font:600 clamp(12px,1.2vw,17px) 'Space Grotesk';color:#fff;text-shadow:0 0 8px #75cfff}
+.verse-marquee-track b{color:#ffe42f;white-space:nowrap;font-size:.95em}
+.verse-separator{font-style:normal;color:#fff;padding:0 12px}
+.verse-arrows{font-size:46px;line-height:30px;color:#16dfff;font-weight:800;text-shadow:0 0 14px #00bfff;letter-spacing:-12px;padding-right:10px}
+.welcome-founder-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,1fr);gap:15px;align-items:stretch}
+.welcome-panel,.founder-showcase{
+  min-height:222px;position:relative;overflow:hidden;border:2px solid #00bfff;border-radius:18px;
+  background:linear-gradient(110deg,rgba(2,22,62,.98),rgba(2,45,91,.92) 55%,rgba(1,16,49,.98));
+  box-shadow:0 0 20px #008cffb0,inset 0 0 25px #008cff55;
+}
+.welcome-panel{display:flex;align-items:center;gap:24px;padding:22px 28px}
+.welcome-panel:before,.founder-showcase:before{content:"";position:absolute;inset:8px;border:1px solid #24dfff88;border-radius:12px;pointer-events:none}
+.welcome-avatar{width:142px;height:142px;flex:0 0 142px;display:grid;place-items:center;border:3px solid #14cfff;border-radius:50%;color:white;background:radial-gradient(circle,#0b68b9,#041d4b 68%);box-shadow:0 0 0 9px #009dff26,0 0 27px #00bfff}
+.welcome-avatar svg{filter:drop-shadow(0 0 12px #5adfff);stroke-width:1.8}
+.welcome-copy{position:relative;z-index:1;min-width:0}
+.student-label{display:inline-flex;align-items:center;gap:7px;padding:7px 15px;border-radius:22px;background:linear-gradient(90deg,#00dc83,#00a95d);color:white;font-size:12px;font-weight:800;box-shadow:0 0 18px #00ef8c99}
+.welcome-copy h2{margin:12px 0 3px;font:800 clamp(27px,3.3vw,48px)/1.08 'Space Grotesk';letter-spacing:-.045em;color:#fff;overflow-wrap:anywhere}
+.welcome-copy h2 strong{color:#ffdf22;text-shadow:0 0 14px #ffc40088}
+.welcome-copy h3{margin:4px 0 7px;font:700 italic clamp(17px,2vw,25px) 'Space Grotesk';color:#18eaff}
+.welcome-copy p{margin:0;color:#f0f7ff;font-size:14px;font-weight:600}
+.founder-showcase{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 12px 24px;background:linear-gradient(115deg,#031d50,#082a60 56%,#02183d)}
+.founder-copy{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;flex:1}
+.founder-kicker{font-size:17px;font-weight:800;font-style:italic;letter-spacing:.12em;color:#e9f7ff;text-shadow:0 0 10px #00bfff}
+.founder-name{margin:0;font:italic 900 clamp(34px,4vw,57px)/1.08 'Space Grotesk';letter-spacing:.02em;color:#ffdf7b;text-shadow:0 0 8px #fff2b2,0 0 22px #ffb300}
+.founder-copy p{margin:7px 0 0;font-size:14px;line-height:1.4;font-weight:700;font-style:italic;color:#fff}
+.founder-signature{align-self:flex-end;margin:0 12px 0 0;font:italic 28px cursive;color:#ffe51f;transform:rotate(-8deg)}
+.founder-showcase img{position:relative;z-index:1;align-self:flex-end;width:38%;max-width:190px;height:205px;object-fit:cover;object-position:50% 22%;margin:-2px -5px -12px 0;filter:drop-shadow(0 0 14px #00bfff99);border-radius:48% 48% 7px 7px;mix-blend-mode:screen}
+.quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.quick-card{min-height:112px;display:flex;align-items:center;justify-content:center;gap:18px;padding:14px 16px;border:2px solid #078dff;border-radius:15px;color:white;background:linear-gradient(120deg,#031a4a,#063c8d 55%,#03183f);box-shadow:0 0 16px #007dff99,inset 0 0 20px #008dff55;transition:transform .2s,filter .2s,box-shadow .2s;text-align:left}
+.quick-card:hover{transform:translateY(-4px);filter:brightness(1.2);box-shadow:0 0 26px #00bfff}
+.quick-card>svg{flex:0 0 auto;width:44px;height:44px;color:#10dfff;filter:drop-shadow(0 0 9px currentColor)}
+.quick-card span{display:grid;gap:5px;min-width:0}
+.quick-card b{font:800 18px/1.1 'Space Grotesk';color:#fff}
+.quick-card small{font-size:13px;color:#fff;font-weight:600}
+.quick-upload{border-color:#00e6b1;background:linear-gradient(120deg,#003c46,#006a68 55%,#002c43);box-shadow:0 0 17px #00d8a288,inset 0 0 20px #00e6a633}
+.quick-upload>svg{color:#28ffc5}
+.quick-premium{border-color:#ffc04b;background:linear-gradient(120deg,#33200a,#67401a 55%,#251507);box-shadow:0 0 18px #ffb72f99,inset 0 0 20px #ffbd4a33}
+.quick-premium>svg{color:#ffd33d}
+.quick-admin{border-color:#356aff;background:linear-gradient(120deg,#06134f,#082d91 55%,#061344);box-shadow:0 0 18px #235dff99,inset 0 0 20px #356aff44}
+.quick-admin>svg{color:#a5c5ff}
+.vimal-hero .verse-ribbon{flex-shrink:0}
+.account-area{padding-top:28px}
+.account-card,.panel,.feature,.step,.result{border-color:#167ab5aa;box-shadow:0 14px 42px #0006,0 0 16px #008dff14}
+.account-card{background:linear-gradient(120deg,#071c42ee,#101b3aee)}
+.account-card h3{color:#fff}
+.account-card .buy-button,.searchbtn{background:linear-gradient(100deg,#08dfff,#168dff 55%,#8b72ff);color:#00152e;box-shadow:0 0 18px #00aaff55}
+.verse-ribbon .verse-copy,.verse-ribbon .verse-text{min-width:0}
+.ad-placeholder{border-color:#1773a866;background:#06142b;color:#8fb9d8}
+.ad-placeholder b{color:#b8e9ff}
+
+@media(max-width:1100px){
+  .vimal-nav{height:auto;min-height:88px;flex-wrap:wrap;padding:10px 18px}
+  .vimal-brand{min-width:0}
+  .vimal-links a,.vimal-links button{min-width:78px;padding:0 11px}
+  .welcome-founder-grid{grid-template-columns:1.2fr 1fr}
+  .welcome-avatar{width:112px;height:112px;flex-basis:112px}
+  .quick-card{gap:11px;padding:12px}
+  .quick-card b{font-size:16px}
+}
+@media(max-width:760px){
+  .vimal-nav{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:9px 12px;border-radius:0 0 13px 13px}
+  .vimal-brand{font-size:19px;gap:8px}
+  .vimal-brand .brandicon{width:46px;height:46px}
+  .vimal-brand .brandicon svg{width:34px;height:34px}
+  .vimal-brand small{font-size:7px;letter-spacing:.07em}
+  .vimal-nav .hamb{display:inline-flex;justify-self:end;padding:9px}
+  .student-gmail{padding:7px 9px;font-size:10px;gap:5px}
+  .google-g{width:22px;height:22px;font-size:15px}
+  .vimal-links{display:none;grid-column:1/-1;height:auto;width:100%;flex-direction:row;flex-wrap:wrap;justify-content:center;border-radius:12px}
+  .vimal-links.show{display:flex}
+  .vimal-links a,.vimal-links button{height:68px;min-width:82px;flex:1 1 18%;font-size:10px;padding:6px}
+  .vimal-links a svg,.vimal-links button svg{width:20px;height:20px}
+  .vimal-hero{padding:15px 12px 20px;gap:11px}
+  .hero-slogan{min-height:108px;padding:12px 90px 12px 10px}
+  .slogan-copy h1{font-size:clamp(22px,6vw,34px)}
+  .slogan-copy h1 span{padding:0 3px}
+  .slogan-copy p{font-size:11px;line-height:1.4}
+  .slogan-globe{right:3%;width:66px;height:66px}
+  .slogan-globe svg{width:48px;height:48px}
+  .slogan-globe:before{width:88px;height:32px}
+  .slogan-globe:after{width:70px;height:86px}
+  .verse-ribbon{min-height:56px;padding:8px 10px;gap:9px;border-radius:10px}
+  .verse-cross{font-size:25px}
+  .verse-marquee-track{font-size:11px}
+  .verse-arrows{font-size:32px;letter-spacing:-9px;padding-right:7px}
+  .welcome-founder-grid{grid-template-columns:1fr;gap:10px}
+  .welcome-panel{min-height:164px;padding:16px 13px;gap:14px}
+  .welcome-avatar{width:82px;height:82px;flex-basis:82px;border-width:2px;box-shadow:0 0 0 5px #009dff26,0 0 18px #00bfff}
+  .welcome-avatar svg{width:42px;height:42px}
+  .student-label{font-size:9px;padding:5px 9px}
+  .welcome-copy h2{font-size:clamp(22px,6vw,32px);margin-top:8px}
+  .welcome-copy h3{font-size:16px}
+  .welcome-copy p{font-size:11px;line-height:1.45}
+  .founder-showcase{min-height:164px;padding:9px 14px 8px 18px}
+  .founder-kicker{font-size:13px}
+  .founder-name{font-size:38px}
+  .founder-copy p{font-size:11px}
+  .founder-signature{font-size:21px}
+  .founder-showcase img{height:154px;width:35%;max-width:145px}
+  .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .quick-card{min-height:88px;gap:9px;padding:10px;border-radius:11px}
+  .quick-card>svg{width:32px;height:32px}
+  .quick-card b{font-size:13px}
+  .quick-card small{font-size:10px}
+}
+@media(max-width:390px){
+  .vimal-brand{font-size:16px}
+  .vimal-brand small{font-size:6px}
+  .student-gmail{font-size:9px;padding:6px}
+  .welcome-avatar{width:68px;height:68px;flex-basis:68px}
+  .welcome-copy h2{font-size:21px}
+  .quick-card{gap:6px;padding:8px}
+  .quick-card>svg{width:27px;height:27px}
+  .quick-card b{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .verse-marquee-track{animation:none!important}
+  .quick-card{transition:none}
+}
