@@ -1,160 +1,96 @@
-          onClose={() => setAuthOpen(false)}
-          onSuccess={() => setAuthOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
 
-const bibleVerses = [
-  { text: "Be strong and of a good courage; be not afraid, neither be thou dismayed.", reference: "JOSHUA 1:9" },
-  { text: "I can do all things through Christ which strengtheneth me.", reference: "PHILIPPIANS 4:13" },
-  { text: "The Lord is my shepherd; I shall not want.", reference: "PSALM 23:1" },
-  { text: "Trust in the Lord with all thine heart; and lean not unto thine own understanding.", reference: "PROVERBS 3:5" },
-  { text: "With God all things are possible.", reference: "MATTHEW 19:26" },
-  { text: "Thy word is a lamp unto my feet, and a light unto my path.", reference: "PSALM 119:105" },
-  { text: "The Lord is my light and my salvation; whom shall I fear?", reference: "PSALM 27:1" },
-  { text: "Let all that ye do be done in love.", reference: "1 CORINTHIANS 16:14" },
-  { text: "For we walk by faith, not by sight.", reference: "2 CORINTHIANS 5:7" },
-  { text: "Commit thy works unto the Lord, and thy thoughts shall be established.", reference: "PROVERBS 16:3" }
+import React, { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
+import {
+  Search, BookOpen, FileText, FlaskConical, GraduationCap,
+  ArrowUpRight, Sparkles, Menu, X, UploadCloud, LibraryBig,
+  Layers3, Command, CheckCircle2, BookMarked, Crown, LogIn,
+  LogOut, Mail, BadgeIndianRupee, Home, ShieldCheck, Globe2, UserRound,
+  Files, Columns2, Maximize2, Minimize2, FileX2, Plus, ArrowLeft
+} from "lucide-react";
+
+const departments = ["CSE", "IT", "AI & DS", "AI & ML", "ECE", "EEE", "Mechanical", "Civil"];
+
+const resourceTypes = [
+  "All resources",
+  "CIE question papers",
+  "Semester question papers",
+  "Lab practical questions",
+  "Lab manuals",
+  "Study materials"
 ];
 
-function BibleVerseTicker() {
-  const [verseIndex, setVerseIndex] = useState(0);
+const sems = { 1: [1, 2], 2: [3, 4], 3: [5, 6], 4: [7, 8] };
 
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setVerseIndex((current) => (current + 1) % bibleVerses.length);
-    }, 6500);
-    return () => window.clearInterval(interval);
-  }, []);
+const supabase =
+  import.meta.env.VITE_SUPABASE_URL &&
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+    ? createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      )
+    : null;
 
-  const verse = bibleVerses[verseIndex];
+export default function App() {
+  const [department, setDepartment] = useState("CSE");
+  const [year, setYear] = useState("2");
+  const [semester, setSemester] = useState("4");
+  const [type, setType] = useState("All resources");
 
-  return (
-    <section className="verse-ribbon" aria-live="polite" aria-label="Continuously changing Bible verses">
-      <div className="verse-cross" aria-hidden="true">✝</div>
-      <div className="verse-marquee-window">
-        <motion.div
-          key={verseIndex}
-          className="verse-marquee-track"
-          initial={{ x: "35%", opacity: 0.25 }}
-          animate={{ x: ["35%", "-100%"], opacity: 1 }}
-          transition={{ duration: 6.4, ease: "linear" }}
-        >
-          <span>“{verse.text}”</span>
-          <b>– {verse.reference}</b>
-          <i className="verse-separator">✦</i>
-          <span>“{bibleVerses[(verseIndex + 1) % bibleVerses.length].text}”</span>
-          <b>– {bibleVerses[(verseIndex + 1) % bibleVerses.length].reference}</b>
-        </motion.div>
-      </div>
-      <div className="verse-arrows" aria-hidden="true">»</div>
-    </section>
-  );
-}
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-function AdSlot({ slot, label }) {
-  const client = import.meta.env.VITE_ADSENSE_CLIENT;
+  const [admin, setAdmin] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
-  useEffect(() => {
-    if (!client || typeof window === "undefined") return;
+  const [session, setSession] = useState(null);
+  const [account, setAccount] = useState(null);
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+  const [payMessage, setPayMessage] = useState("");
+  const [viewerOpen, setViewerOpen] = useState(false);
 
-    let script = document.querySelector("script[data-vimal-ads]");
-
-    if (!script) {
-      script = document.createElement("script");
-      script.async = true;
-      script.crossOrigin = "anonymous";
-      script.dataset.vimalAds = "true";
-      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`;
-      document.head.appendChild(script);
-    }
-
-    if (slot) {
-      const push = () => {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } catch (_) {}
-      };
-
-      if (script.dataset.loaded === "true") {
-        push();
-      } else {
-        script.addEventListener(
-          "load",
-          () => {
-            script.dataset.loaded = "true";
-            push();
-          },
-          { once: true }
-        );
-      }
-    }
-  }, [client, slot]);
-
-  return (
-    <div className="ad-wrap">
-      <div className="ad-label">{label}</div>
-
-      {client && slot ? (
-        <ins
-          className="adsbygoogle ad-unit"
-          style={{ display: "block" }}
-          data-ad-client={client}
-          data-ad-slot={slot}
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        />
-      ) : (
-        <div className="ad-placeholder">
-          <b>VIMAL College Hub · Sponsored space</b>
-          <span>
-            Advertisement space — connect an approved ad account or contact us
-            for sponsorship.
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AuthModal({ onClose, onSuccess }) {
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [sent, setSent] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-
-  async function submit(e) {
-    e.preventDefault();
-
-    if (!supabase) {
-      setMessage(
-        "Authentication is not configured. Add the Supabase public environment variables in Vercel."
-      );
+  async function refreshAccount(currentSession = session) {
+    if (!currentSession?.access_token) {
+      setAccount(null);
       return;
     }
 
-    setBusy(true);
-    setMessage("");
-
     try {
-      if (!sent) {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: email.trim(),
-          options: { shouldCreateUser: true }
-        });
+      const response = await fetch("/api/account", {
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`
+        }
+      });
 
-        if (error) throw error;
+      const data = await response.json();
 
-        setSent(true);
-        setMessage(
-          "A sign-in code has been sent to your email. Check your inbox and spam folder."
-        );
+      if (response.ok) {
+        setAccount(data);
       } else {
-        const { error } = await supabase.auth.verifyOtp({
-          email: email.trim(),
-          token: otp.trim(),
-          type: "email"
-        });
+        console.error("Account error:", data.error);
+      }
+    } catch (err) {
+      console.error("Could not refresh account:", err);
+    }
+  }
+
+  useEffect(() => {
+    if (!supabase) {
+      setAccountLoading(false);
+      return;
+    }
+
+    let alive = true;
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!alive) return;
+
+      setSession(data.session);
+
+      if (data.session) {
