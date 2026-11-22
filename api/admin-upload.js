@@ -13,6 +13,131 @@ const MIME_TYPES = {
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
+import { IncomingForm } from "formidable";
+import fs from "fs";
+import path from "path";
+import { supabaseAdmin, json } from "../lib/supabase.js";
+
+export const config = {
+  api: { bodyParser: false }
+};
+
+const MAX_SIZE = 25 * 1024 * 1024;
+
+const ALLOWED = new Set([
+  "pdf", "ppt", "pptx", "doc", "docx",
+  "jpg", "jpeg", "png"
+]);
+
+function parseForm(req) {
+  return new Promise((resolve, reject) => {
+    const form = new IncomingForm({
+      maxFileSize: MAX_SIZE,
+      maxFiles: 1,
+      multiples: false
+    });
+
+    form.parse(req, (error, fields, files) => {
+      if (error) return reject(error);
+      resolve({ fields, files });
+    });
+  });
+}
+
+function value(item) {
+  return Array.isArray(item) ? item[0] : item;
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return json(res, 405, { error: "Method not allowed." });
+  }
+
+  let tempFile;
+
+  try {
+    if (
+      !process.env.ADMIN_API_KEY ||
+      req.headers["x-admin-key"] !== process.env.ADMIN_API_KEY
+    ) {
+      return json(res, 401, { error: "Admin authentication failed." });
+    }
+
+    const { fields, files } = await parseForm(req);
+    const file = value(files.file || files.pdf);
+
+    if (!file) {
+      return json(res, 400, { error: "Please select a file." });
+    }
+
+    tempFile = file.filepath;
+
+    const filename = file.originalFilename || "upload";
+    const extension = path.extname(filename).slice(1).toLowerCase();
+
+    if (!ALLOWED.has(extension)) {
+      return json(res, 400, { error: "Unsupported file format." });
+    }
+
+    const buffer = fs.readFileSync(tempFile);
+
+    const db = supabaseAdmin();
+    const bucket = process.env.SUPABASE_BUCKET || "academic-pdfs";
+
+    const storagePath =
+      `uploads/${Date.now()}-${path.basename(filename)}`;
+
+    const contentTypes = {
+      pdf: "application/pdf",
+      ppt: "application/vnd.ms-powerpoint",
+      pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png"
+    };
+
+    const { error: uploadError } = await db.storage
+      .from(bucket)
+      .upload(storagePath, buffer, {
+        contentType: contentTypes[extension],
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    return json(res, 200, {
+      success: true,
+      message: "File uploaded.",
+      storagePath,
+      filename,
+      metadata: {
+        title: value(fields.title),
+        department: value(fields.department),
+        year: value(fields.year),
+        semester: value(fields.semester),
+        unit: value(fields.unit),
+        subject: value(fields.subject),
+        subjectCode: value(fields.subjectCode),
+        resourceType: value(fields.resourceType)
+      }
+    });
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    return json(res, 500, {
+      error: error.message || "Upload failed."
+    });
+  } finally {
+    if (tempFile) {
+      try {
+        fs.unlinkSync(tempFile);
+      } catch {}
+    }
+  }
+}
+
   png: "image/png"
 };
 
