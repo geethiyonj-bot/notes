@@ -1,374 +1,106 @@
-import { IncomingForm } from "formidable";
-import fs from "node:fs/promises";
-import path from "node:path";
-import crypto from "node:crypto";
-import pdfParse from "pdf-parse";
+
+import crypto from "crypto";
 import { supabaseAdmin, json } from "../lib/supabase.js";
 
-export const config = {
-  api: {
-    bodyParser: false
-  }
+const MAX_SIZE = 25 * 1024 * 1024;
+const BUCKET = process.env.SUPABASE_BUCKET || "academic-pdfs";
+
+const MIME_TYPES = {
+  pdf: "application/pdf",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png"
 };
-
-// Keep the file below Vercel's overall request-body limit.
-const MAX_SIZE = 3.5 * 1024 * 1024;
-
-const ALLOWED_TYPES = [
-  "CIE question papers",
-  "Semester question papers",
-  "Lab practical questions",
-  "Lab manuals",
-  "Study materials"
-];
-
-const one = value =>
-  Array.isArray(value) ? value[0] : value;
-
-const clean = value =>
-  String(one(value) ?? "").trim();
-
-function parseForm(req) {
-  const form = new IncomingForm({
-    maxFileSize: MAX_SIZE,
-    maxTotalFileSize: MAX_SIZE + 512 * 1024,
-    maxFiles: 1,
-    multiples: false,
-    keepExtensions: true,
-    allowEmptyFiles: false,
-    minFileSize: 1
-  });
-
-  return new Promise((resolve, reject) => {
-    form.parse(req, (error, fields, files) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve({ fields, files });
-    });
-  });
-}
-
-function isPdfFile(buffer) {
-  // A PDF file must contain the PDF signature near its beginning.
-  const header = buffer.subarray(0, 1024);
-  return header.includes(Buffer.from("%PDF-"));
-}
-
-function getUploadError(error) {
-  if (
-    error?.code === "ETOOBIG" ||
-    error?.httpCode === 413 ||
-    error?.status === 413
-  ) {
-    return {
-      status: 413,
-      message: "PDF is too large. Please upload a PDF smaller than 3.5 MB."
-    };
-  }
-
-  return {
-    status: 400,
-    message: error?.message || "Unable to process the uploaded PDF."
-  };
-}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return json(res, 405, {
-      success: false,
-      error: "Only POST requests are allowed."
-    });
+    return json(res, 405, { error: "Method not allowed." });
   }
-
-  // 1. ADMIN AUTHENTICATION
-
-  const savedKey = process.env.ADMIN_API_KEY?.trim();
-
-  const enteredKey =
-    typeof req.headers["x-admin-key"] === "string"
-      ? req.headers["x-admin-key"].trim()
-      : "";
-
-  if (!savedKey) {
-    return json(res, 500, {
-      success: false,
-      error: "ADMIN_API_KEY is missing in Vercel Environment Variables."
-    });
-  }
-
-  if (!enteredKey || enteredKey !== savedKey) {
-    return json(res, 401, {
-      success: false,
-      error: "Incorrect admin key."
-    });
-  }
-
-  // 2. INITIALIZE VARIABLES
-
-  let db = null;
-  let tempPath = null;
-  let uploadedPath = null;
-  let resourceId = null;
-
-  const bucket =
-    process.env.SUPABASE_BUCKET || "academic-pdfs";
 
   try {
-    // 3. CONNECT TO SUPABASE
-
-    db = supabaseAdmin();
-
-    // 4. RECEIVE FORM DATA
-
-    const { fields, files } = await parseForm(req);
-
-    const file = one(files.pdf);
-
-    if (!file) {
-      return json(res, 400, {
-        success: false,
-        error: "Please select a PDF file."
-      });
-    }
-
-    tempPath = file.filepath || file.path || null;
-
-    if (!tempPath) {
-      return json(res, 400, {
-        success: false,
-        error: "Uploaded file could not be located."
-      });
-    }
-
-    if (file.size > MAX_SIZE) {
-      return json(res, 413, {
-        success: false,
-        error: "PDF must be smaller than 3.5 MB."
-      });
-    }
-
-    // 5. READ PDF FILE
-
-    const buffer = await fs.readFile(tempPath);
-
-    if (!isPdfFile(buffer)) {
-      return json(res, 400, {
-        success: false,
-        error: "The selected file is not a valid PDF. Please select an actual PDF document."
-      });
-    }
-
-    const originalName =
-      file.originalFilename ||
-      file.newFilename ||
-      "resource.pdf";
-
-    // 6. READ ACADEMIC DETAILS
-
-    const title = clean(fields.title);
-    const department = clean(fields.department);
-
-    const year = Number(clean(fields.year));
-    const semester = Number(clean(fields.semester));
-
-    const unitText = clean(fields.unit);
-    const unit = unitText ? Number(unitText) : null;
-
-    const subject = clean(fields.subject);
-    const subjectCode = clean(fields.subjectCode) || null;
-    const resourceType = clean(fields.resourceType);
-
-    if (!title || !department || !subject) {
-      return json(res, 400, {
-        success: false,
-        error: "Title, department and subject are required."
-      });
-    }
-
-    if (![1, 2, 3, 4].includes(year)) {
-      return json(res, 400, {
-        success: false,
-        error: "Select a valid academic year."
-      });
-    }
-
-    if (![1, 2, 3, 4, 5, 6, 7, 8].includes(semester)) {
-      return json(res, 400, {
-        success: false,
-        error: "Select a valid semester."
-      });
-    }
+    const adminKey = req.headers["x-admin-key"];
 
     if (
-      unit !== null &&
-      ![1, 2, 3, 4, 5].includes(unit)
+      !process.env.ADMIN_API_KEY ||
+      adminKey !== process.env.ADMIN_API_KEY
     ) {
+      return json(res, 401, {
+        error: "Admin authentication failed."
+      });
+    }
+
+    const {
+      filename,
+      size,
+      title,
+      department,
+      year,
+      semester,
+      unit,
+      subject,
+      subjectCode,
+      resourceType
+    } = req.body || {};
+
+    if (!filename || !title || !department || !year || !semester || !size) {
       return json(res, 400, {
-        success: false,
-        error: "Select a valid unit."
+        error: "Please provide all required file and academic details."
       });
     }
 
-    if (!ALLOWED_TYPES.includes(resourceType)) {
+    if (!Number.isFinite(Number(size)) || Number(size) <= 0 || Number(size) > MAX_SIZE) {
+      return json(res, 413, {
+        error: "File size must be between 1 byte and 25 MB."
+      });
+    }
+
+    const extension = filename.split(".").pop().toLowerCase();
+    const contentType = MIME_TYPES[extension];
+
+    if (!contentType) {
       return json(res, 400, {
-        success: false,
-        error: "Select a valid resource type."
+        error: "Unsupported file format. Use PDF, PPT, PPTX, DOC, DOCX, JPG, JPEG or PNG."
       });
     }
 
-    // 7. EXTRACT PDF TEXT
+    const safeExtension = extension;
+    const storagePath = `uploads/${crypto.randomUUID()}.${safeExtension}`;
 
-    let parsed;
+    const db = supabaseAdmin();
 
-    try {
-      parsed = await pdfParse(buffer);
-    } catch (error) {
-      console.error("PDF PARSING ERROR:", error);
+    const { data, error } = await db.storage
+      .from(BUCKET)
+      .createSignedUploadUrl(storagePath);
 
-      return json(res, 422, {
-        success: false,
-        error: "Unable to read this PDF. Please try another PDF file."
-      });
-    }
+    if (error) throw error;
 
-    const pages = String(parsed.text || "")
-      .split(/\f/)
-      .map((pageText, index) => ({
-        page_number: index + 1,
-        page_text: pageText.trim()
-      }))
-      .filter(page => page.page_text.length > 0);
-
-    if (pages.length === 0) {
-      return json(res, 422, {
-        success: false,
-        error: "No selectable text found. This PDF may be scanned and require OCR."
-      });
-    }
-
-    // 8. UPLOAD PDF TO SUPABASE STORAGE
-
-    const safeDepartment = department.replace(
-      /[^a-z0-9_-]/gi,
-      "_"
-    );
-
-    const storagePath =
-      `${safeDepartment}/${year}-${semester}/${crypto.randomUUID()}.pdf`;
-
-    const { error: storageError } = await db.storage
-      .from(bucket)
-      .upload(storagePath, buffer, {
-        contentType: "application/pdf",
-        upsert: false
-      });
-
-    if (storageError) {
-      throw new Error(
-        "Supabase storage error: " + storageError.message
-      );
-    }
-
-    uploadedPath = storagePath;
-
-    // 9. SAVE RESOURCE DETAILS IN DATABASE
-
-    const { data: resource, error: resourceError } = await db
-      .from("resources")
-      .insert({
+    return json(res, 200, {
+      success: true,
+      storagePath: data.path || storagePath,
+      token: data.token,
+      contentType,
+      metadata: {
+        filename,
         title,
         department,
-        academic_year: year,
+        year,
         semester,
-        unit,
-        subject,
-        subject_code: subjectCode,
-        resource_type: resourceType,
-        original_filename: originalName,
-        storage_path: storagePath
-      })
-      .select("id")
-      .single();
-
-    if (resourceError) {
-      throw new Error(
-        "Database resource error: " + resourceError.message
-      );
-    }
-
-    resourceId = resource.id;
-
-    // 10. INDEX PDF PAGE TEXT
-
-    const pageRows = pages.map(page => ({
-      resource_id: resourceId,
-      page_number: page.page_number,
-      page_text: page.page_text
-    }));
-
-    for (let i = 0; i < pageRows.length; i += 100) {
-      const batch = pageRows.slice(i, i + 100);
-
-      const { error: pageError } = await db
-        .from("resource_pages")
-        .insert(batch);
-
-      if (pageError) {
-        throw new Error(
-          "PDF indexing error: " + pageError.message
-        );
+        unit: unit || "",
+        subject: subject || "",
+        subjectCode: subjectCode || "",
+        resourceType: resourceType || "Study materials"
       }
-    }
-
-    // 11. SUCCESS RESPONSE
-
-    return json(res, 201, {
-      success: true,
-      message: "PDF uploaded and indexed successfully.",
-      resourceId,
-      indexedPages: pages.length
     });
 
   } catch (error) {
-    console.error("ADMIN UPLOAD ERROR:", error);
+    console.error("Upload URL error:", error);
 
-    // Remove incomplete database record.
-    if (db && resourceId) {
-      const { error: deleteError } = await db
-        .from("resources")
-        .delete()
-        .eq("id", resourceId);
-
-      if (deleteError) {
-        console.error("DATABASE CLEANUP ERROR:", deleteError);
-      }
-    }
-
-    // Remove incomplete storage upload.
-    if (db && uploadedPath) {
-      const { error: removeError } = await db.storage
-        .from(bucket)
-        .remove([uploadedPath]);
-
-      if (removeError) {
-        console.error("STORAGE CLEANUP ERROR:", removeError);
-      }
-    }
-
-    const result = getUploadError(error);
-
-    return json(res, result.status, {
-      success: false,
-      error: result.message
+    return json(res, 500, {
+      error: "Could not create secure upload link."
     });
-
-  } finally {
-    // Remove temporary uploaded file.
-    if (tempPath) {
-      await fs.unlink(tempPath).catch(() => {});
-    }
   }
 }
